@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Brand Memory Match Game</title>
+    <title>Car Brand Challenge</title>
     <style>
         * {
             margin: 0;
@@ -376,6 +376,23 @@
             }
         }
 
+        /* Card number on the back */
+        .card-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 
+                0 0 20px rgba(255, 215, 0, 0.8),
+                2px 2px 4px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(255, 215, 0, 0.5);
+            z-index: 10;
+            pointer-events: none;
+        }
+
         .card-front {
             background: #ffffff;
             border: 3px solid #d4af37;
@@ -409,14 +426,14 @@
         }
 
         .card-logo {
-            width: 100px;
-            height: 100px;
+            width: 140px;
+            height: 140px;
             display: flex;
             justify-content: center;
             align-items: center;
             background: #ffffff;
             border-radius: 10px;
-            padding: 10px;
+            padding: 12px;
         }
 
         .card-logo img {
@@ -428,7 +445,7 @@
         }
 
         .card-text {
-            font-size: 1.5em;
+            font-size: 1.6em;
             font-weight: bold;
             color: #1a1a2e;
             text-align: center;
@@ -577,8 +594,12 @@
             }
             
             .card-logo {
-                width: 90px;
-                height: 90px;
+                width: 110px;
+                height: 110px;
+            }
+
+            .card-number {
+                font-size: 4em;
             }
         }
 
@@ -598,12 +619,16 @@
             }
 
             .card-text {
-                font-size: 1.2em;
+                font-size: 1.3em;
             }
             
             .card-logo {
-                width: 70px;
-                height: 70px;
+                width: 90px;
+                height: 90px;
+            }
+
+            .card-number {
+                font-size: 3em;
             }
         }
 
@@ -615,12 +640,16 @@
             }
 
             .card-text {
-                font-size: 1em;
+                font-size: 1.1em;
             }
 
             .card-logo {
-                width: 60px;
-                height: 60px;
+                width: 70px;
+                height: 70px;
+            }
+
+            .card-number {
+                font-size: 2.5em;
             }
         }
     </style>
@@ -628,7 +657,7 @@
 <body>
     <div class="game-container">
         <div class="header">
-            <h1>🚗 Car Brand Memory Match</h1>
+            <h1>🏎️ Car Brand Challenge</h1>
             <p>Match the logos with their brand names!</p>
         </div>
 
@@ -826,6 +855,7 @@
                 cardElement.innerHTML = `
                     <div class="card-inner">
                         <div class="card-face card-back">
+                            <div class="card-number">${index + 1}</div>
                         </div>
                         <div class="card-face card-front">
                             <div class="card-content">
