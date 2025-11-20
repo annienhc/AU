@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Brand Memory Match Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .particle {
+            position: absolute;
+            background: rgba(100, 200, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 8s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Congratulation effect */
+        .congrats-effect {
+            position: fixed;
+            font-size: 4em;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
+            z-index: 9999;
+            pointer-events: none;
+            animation: congratsAnimation 1.5s ease-out forwards;
+        }
+
+        @keyframes congratsAnimation {
+            0% {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.5) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        .firework {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            background: #00ff88;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            animation: fireworkAnimation 1s ease-out forwards;
+        }
+
+        @keyframes fireworkAnimation {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y));
+                opacity: 0;
+            }
+        }
+
+        .game-container {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 40px rgba(0, 255, 136, 0.2);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
+            animation: headerPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes headerPulse {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            50% {
+                transform: rotate(180deg);
+            }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.8),
+                         2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px rgba(0, 255, 136, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+            to {
+                text-shadow: 0 0 40px rgba(0, 255, 136, 1), 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .controls {
+            padding: 25px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .score-board {
+            display: flex;
+            gap: 30px;
+        }
+
+        .score-item {
+            text-align: center;
+            background: rgba(30, 30, 50, 0.8);
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3),
+                        0 0 20px rgba(0, 255, 136, 0.2);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #00ff88;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00d9ff;
+            margin-top: 5px;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+
+        .level-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .level-btn {
+            padding: 12px 24px;
+            border: 3px solid #00ff88;
+            background: rgba(30, 30, 50, 0.8);
+            color: #00ff88;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        .level-btn.active {
+            background: linear-gradient(135deg, #00ff88 0%, #00d9ff 100%);
+            color: #0f0c29;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.6);
+        }
+
+        .reset-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #ff006e 0%, #ff6b35 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 0, 110, 0.4);
+        }
+
+        .game-board {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            min-height: 500px;
+            background: linear-gradient(135deg, #0f0c29 0%, #16213e 100%);
+        }
+
+        .card {
+            aspect-ratio: 0.7;
+            width: 100%;
+            cursor: pointer;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+            color: white;
+            font-size: 3em;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+            justify-content: center;
+        }
+
+        .card-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+            border: 3px solid #00ff88;
+            transform: rotateY(180deg);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .card.matched .card-front {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 217, 255, 0.2) 100%);
+            border-color: #00ff88;
+            animation: matchPulse 1s ease infinite;
+        }
+
+        @keyframes matchPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(0, 255, 136, 0.9),
+                            0 0 60px rgba(0, 217, 255, 0.5);
+            }
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .card-logo {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            filter: drop-shadow(0 2px 8px rgba(0, 255, 136, 0.3));
+        }
+
+        .card-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00ff88;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            padding: 10px;
+            word-wrap: break-word;
+        }
+
+        .speaker-btn-container {
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .speaker-btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00d9ff 100%);
+            color: #0f0c29;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 255, 136, 0.4);
+        }
+
+        .speaker-btn:active {
+            animation: soundWave 0.5s ease;
+        }
+
+        @keyframes soundWave {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(0, 255, 136, 0);
+            }
+        }
+
+        .speaker-placeholder {
+            height: 45px;
+            flex-shrink: 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 50px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 500px;
+            animation: slideUp 0.5s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+                        0 0 40px rgba(0, 255, 136, 0.5);
+            border: 2px solid rgba(0, 255, 136, 0.5);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            font-size: 2.5em;
+            color: #00ff88;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .modal-content p {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #00d9ff;
+        }
+
+        .confetti {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .close-modal-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #00ff88 0%, #00d9ff 100%);
+            color: #0f0c29;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        @media (max-width: 1024px) {
+            .game-board {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .card-logo {
+                width: 90px;
+                height: 90px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .card-text {
+                font-size: 1.2em;
+            }
+            
+            .card-logo {
+                width: 70px;
+                height: 70px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-board {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .card-text {
+                font-size: 1em;
+            }
+
+            .card-logo {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🚗 Car Brand Memory Match</h1>
+            <p>Match the logos with their brand names!</p>
+        </div>
+
+        <div class="controls">
+            <div class="score-board">
+                <div class="score-item">
+                    <div class="score-label">Score</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Moves</div>
+                    <div class="score-value" id="moves">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Time</div>
+                    <div class="score-value" id="timer">00:00</div>
+                </div>
+            </div>
+
+            <div class="level-buttons">
+                <button class="level-btn active" onclick="setLevel(1)">Level 1</button>
+                <button class="level-btn" onclick="setLevel(2)">Level 2</button>
+                <button class="level-btn" onclick="setLevel(3)">Level 3</button>
+                <button class="level-btn" onclick="setLevel(4)">Level 4</button>
+            </div>
+
+            <button class="reset-btn" onclick="resetGame()">🔄 New Game</button>
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+    </div>
+
+    <div class="modal" id="victoryModal">
+        <div class="modal-content">
+            <div class="confetti">🎉🎊🎈</div>
+            <h2>Congratulations!</h2>
+            <p>You completed Level <span id="completedLevel"></span>!</p>
+            <p><strong>Score:</strong> <span id="finalScore"></span></p>
+            <p><strong>Moves:</strong> <span id="finalMoves"></span></p>
+            <p><strong>Time:</strong> <span id="finalTime"></span></p>
+            <button class="close-modal-btn" onclick="closeModal()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Car brand data for each level
+        const levels = {
+            1: [
+                { name: 'Toyota', logo: 'logos/toyota.jpg' },
+                { name: 'Honda', logo: 'logos/honda.jpg' },
+                { name: 'Nissan', logo: 'logos/nissan.jpg' },
+                { name: 'Mazda', logo: 'logos/mazda.jpg' },
+                { name: 'Hyundai', logo: 'logos/hyundai.jpg' }
+            ],
+            2: [
+                { name: 'BMW', logo: 'logos/bmw.jpg' },
+                { name: 'Mercedes', logo: 'logos/mercedes.jpg' },
+                { name: 'Volkswagen', logo: 'logos/volkswagen.jpg' },
+                { name: 'Ford', logo: 'logos/ford.jpg' },
+                { name: 'Chevrolet', logo: 'logos/chevrolet.jpg' }
+            ],
+            3: [
+                { name: 'Porsche', logo: 'logos/porsche.jpg' },
+                { name: 'Audi', logo: 'logos/audi.jpg' },
+                { name: 'Jaguar', logo: 'logos/jaguar.jpg' },
+                { name: 'Tesla', logo: 'logos/tesla.jpg' },
+                { name: 'Lamborghini', logo: 'logos/lamborghini.jpg' }
+            ],
+            4: [
+                { name: 'BYD', logo: 'logos/byd.jpg' },
+                { name: 'Geely', logo: 'logos/geely.jpg' },
+                { name: 'Great Wall', logo: 'logos/greatwall.jpg' },
+                { name: 'Chery', logo: 'logos/chery.jpg' },
+                { name: 'MG', logo: 'logos/mg.jpg' }
+            ]
+        };
+
+        let currentLevel = 1;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let score = 0;
+        let timerInterval;
+        let seconds = 0;
+
+        // Create background particles
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 10 + 5 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = Math.random() * 5 + 8 + 's';
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Show congratulation effect when match is found
+        function showCongratulationEffect() {
+            const congrats = document.createElement('div');
+            congrats.className = 'congrats-effect';
+            congrats.textContent = '🎉 PERFECT MATCH! 🎉';
+            congrats.style.left = '50%';
+            congrats.style.top = '50%';
+            congrats.style.transform = 'translate(-50%, -50%)';
+            document.body.appendChild(congrats);
+
+            setTimeout(() => congrats.remove(), 1500);
+
+            const colors = ['#00ff88', '#00d9ff', '#ff006e', '#ffbe0b'];
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    firework.style.left = '50%';
+                    firework.style.top = '50%';
+                    
+                    const angle = (Math.PI * 2 * i) / 30;
+                    const distance = 100 + Math.random() * 100;
+                    const x = Math.cos(angle) * distance;
+                    const y = Math.sin(angle) * distance;
+                    
+                    firework.style.setProperty('--x', x + 'px');
+                    firework.style.setProperty('--y', y + 'px');
+                    
+                    document.body.appendChild(firework);
+                    setTimeout(() => firework.remove(), 1000);
+                }, i * 20);
+            }
+        }
+
+        // Initialize game
+        function initGame() {
+            const brands = levels[currentLevel];
+            cards = [];
+
+            brands.forEach((brand, index) => {
+                cards.push({
+                    id: `logo-${index}`,
+                    type: 'logo',
+                    brand: brand.name,
+                    content: brand.logo,
+                    matched: false
+                });
+            });
+
+            brands.forEach((brand, index) => {
+                cards.push({
+                    id: `text-${index}`,
+                    type: 'text',
+                    brand: brand.name,
+                    content: brand.name,
+                    matched: false
+                });
+            });
+
+            cards = shuffleArray(cards);
+
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            score = 0;
+            seconds = 0;
+
+            updateScore();
+            renderCards();
+            startTimer();
+        }
+
+        // Shuffle array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Render cards
+        function renderCards() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.dataset.index = index;
+                cardElement.onclick = () => flipCard(index);
+
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-back">
+                            🚗
+                        </div>
+                        <div class="card-face card-front">
+                            <div class="card-content">
+                                ${card.type === 'logo' ? 
+                                    `<div class="card-logo"><img src="${card.content}" alt="${card.brand}"></div>` :
+                                    `<div class="card-text">${card.content}</div>`
+                                }
+                            </div>
+                            ${card.type === 'logo' ? 
+                                `<div class="speaker-btn-container">
+                                    <button class="speaker-btn" onclick="speak('${card.brand}', event)">🔊</button>
+                                </div>` :
+                                `<div class="speaker-placeholder"></div>`
+                            }
+                        </div>
+                    </div>
+                `;
+
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        // Flip card - MODIFIED: Cards stay open until 3rd card is clicked
+        function flipCard(index) {
+            // Prevent flipping if card is already matched
+            if (cards[index].matched) return;
+            
+            // If clicking on already flipped card, do nothing
+            if (flippedCards.some(card => card.index === index)) return;
+
+            const cardElement = document.querySelectorAll('.card')[index];
+            cardElement.classList.add('flipped');
+
+            flippedCards.push({ index, card: cards[index] });
+
+            // Check for match when 2 cards are flipped
+            if (flippedCards.length === 2) {
+                moves++;
+                updateScore();
+                checkMatch();
+            }
+            
+            // When 3rd card is clicked, close previous non-matched cards
+            if (flippedCards.length === 3) {
+                const thirdCard = flippedCards[2];
+                
+                // Close the first two cards if they weren't a match
+                if (!cards[flippedCards[0].index].matched) {
+                    const cardElements = document.querySelectorAll('.card');
+                    cardElements[flippedCards[0].index].classList.remove('flipped');
+                    cardElements[flippedCards[1].index].classList.remove('flipped');
+                }
+                
+                // Keep only the third card in flippedCards array
+                flippedCards = [thirdCard];
+            }
+        }
+
+        // Check for match - MODIFIED: No automatic closing
+        function checkMatch() {
+            const [first, second] = flippedCards;
+
+            // Small delay to show both cards before checking
+            setTimeout(() => {
+                if (first.card.brand === second.card.brand) {
+                    // Match found!
+                    cards[first.index].matched = true;
+                    cards[second.index].matched = true;
+
+                    const cardElements = document.querySelectorAll('.card');
+                    cardElements[first.index].classList.add('matched');
+                    cardElements[second.index].classList.add('matched');
+
+                    matchedPairs++;
+                    score += 10;
+                    updateScore();
+
+                    showCongratulationEffect();
+
+                    // Clear flipped cards since they're matched
+                    flippedCards = [];
+
+                    // Check if level is complete
+                    if (matchedPairs === 5) {
+                        setTimeout(() => {
+                            showVictoryModal();
+                        }, 1000);
+                    }
+                }
+                // If not a match, cards stay open until user clicks a 3rd card
+            }, 500);
+        }
+
+        // Text to speech
+        function speak(text, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Update score display
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('moves').textContent = moves;
+        }
+
+        // Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            timerInterval = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                document.getElementById('timer').textContent = 
+                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // Show victory modal
+        function showVictoryModal() {
+            stopTimer();
+
+            const modal = document.getElementById('victoryModal');
+            document.getElementById('completedLevel').textContent = currentLevel;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalMoves').textContent = moves;
+            document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+
+            modal.classList.add('show');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('victoryModal').classList.remove('show');
+            
+            if (currentLevel < 4) {
+                setLevel(currentLevel + 1);
+            } else {
+                resetGame();
+            }
+        }
+
+        // Set level
+        function setLevel(level) {
+            currentLevel = level;
+
+            document.querySelectorAll('.level-btn').forEach((btn, index) => {
+                btn.classList.toggle('active', index === level - 1);
+            });
+
+            resetGame();
+        }
+
+        // Reset game
+        function resetGame() {
+            stopTimer();
+            initGame();
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            createParticles();
+            initGame();
+        };
+    </script>
+</body>
+</html>
